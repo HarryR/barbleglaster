@@ -1,0 +1,9 @@
+__pycache__
+old*
+notes
+*.jsonl
+allold
+.vscode
+*.pdf
+kate-strange
+new

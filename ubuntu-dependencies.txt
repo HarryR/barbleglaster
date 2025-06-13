@@ -1,0 +1,6 @@
+pandoc        # convert markdown to PDF, https://pandoc.org
+librsvg2-bin  # for rsvg-convert, to make PDF using SVG images, https://github.com/GNOME/librsvg/blob/main/rsvg-convert.rst
+scour         # used to reduce size of SVG images, https://gitlab.com/inkscape/extras/scour
+
+python3-gmpy2
+python3-matplotlib
