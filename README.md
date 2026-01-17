@@ -430,14 +430,16 @@ For curves $E_{g^i}: y^2 = x^3 + g^i$ where $g$ generates $\mathbb{F}^*/\mathbb{
 
   where $\alpha$ and $\beta$ are constants and $\zeta_6$ is a primitive sixth root of unity in the field.
 
-* For $i = 0$, we get $t_0 = \alpha + \beta$, which is always even
-* For $i \in \{2, 3, 4\}$, the traces can be expressed as:
-  - $t_2 = \alpha \cdot \zeta_6^2 + \beta \cdot \zeta_6^{-2}$ (related to cube roots of unity)
-  - $t_3 = \alpha \cdot \zeta_6^3 + \beta \cdot \zeta_6^{-3} = \alpha \cdot (-1) + \beta \cdot (-1) = -(\alpha + \beta)$ (always even)
-  - $t_4 = \alpha \cdot \zeta_6^4 + \beta \cdot \zeta_6^{-4}$ (related to cube roots of unity)
+* For $i \in \{0, 3\}$, the orders are always even (hence composite for $p > 3$):
+  - $t_0 = -2a$ gives $|E_0| = p + 1 + 2a$ (even, since $p \equiv 7 \pmod{12}$ implies $p+1$ is even, and $a$ is even in Cornacchia's representation)
+  - $t_3 = 2a$ gives $|E_3| = p + 1 - 2a$ (even)
 
-* These expressions for $i \in \{0, 2, 3, 4\}$ result in trace values that make $p + 1 - t_i$ composite.
-* Only for $i \in \{1,5\}$ do we get trace values that can make $p + 1 - t_i$ prime.
-  - For $i = 1$: $t_1 = \alpha \cdot \zeta_6 + \beta \cdot \zeta_6^{-1}$
-  - For $i = 5$: $t_5 = \alpha \cdot \zeta_6^5 + \beta \cdot \zeta_6^{-5} = \alpha \cdot \zeta_6^{-1} + \beta \cdot \zeta_6 = -t_1$ (as $\zeta_6^5 = \zeta_6^{-1}$)
+* For the remaining indices $\{1, 2, 4, 5\}$, exactly one pair has orders divisible by 3, depending on $a \bmod 3$:
+  - If $a \equiv 1 \pmod{3}$: orders at indices 1 and 5 are divisible by 3
+  - If $a \equiv 2 \pmod{3}$: orders at indices 2 and 4 are divisible by 3
+  - (Note: $a \not\equiv 0 \pmod{3}$ since otherwise $3 | a^2 + 3b^2 = p$, contradicting $p \equiv 1 \pmod{3}$)
+
+* This leaves at most 2 trace indices where the order could potentially be prime.
+
+* **Important distinction**: The claim that curves $E_{g^1}$ and $E_{g^5}$ can have prime order refers to *curve indices* (powers of the generator $g$), not *trace formula indices*. The mapping between trace indices and curve indices depends on $(c+d) \bmod 3$ and the cubic character $\zeta_3(g) \cdot c + d$, as described in the previous section. See also `proof/EllipticPrimeOrder/` for the formalized proof that at most 2 orders can be prime
 * While the formula suggests $t_5 = -t_1$, we empirically verify a more general relationship: We call the curve with $i = 5$ the trace complementary sextic twist of the curve with $i = 1$, as their traces satisfy $|t_1 + t_5| = |2a|$ where $p = a^2 + 3b^2$.
