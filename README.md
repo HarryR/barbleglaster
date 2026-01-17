@@ -359,7 +359,7 @@ rank: 0.0
 
 \pagebreak
 
-# Lemmas, Corrolaries & Notes
+# Lemmas, Corollaries & Notes
 
 ## Deterministic Curve Order Mapping via Eisenstein Integers in $\mathbb{Q}(\sqrt{-3})$
 
@@ -369,7 +369,7 @@ See: `steps/5-curves.py`
 The history of elliptic curve point counting has rich and deep roots which have been refined over the decades, we can trace a lineage of sorts which leads to the most useful results for us:
 
  * In 1986: Lenstra [@lenstra1986elliptic, 11, §4] provides an intuitive formula for j-invariant 0 curves over $\mathbb{Q}(\sqrt{-3})$, which comes surprisingly close to Wu & Xu's [@GuangwuXu_2020_1136] conclusions in 2020.
- * In 1995: Schoof [@schoof1995counting§4] expains how to count the number of points when the endomorphism ring of E is known.
+ * In 1995: Schoof [@schoof1995counting§4] explains how to count the number of points when the endomorphism ring of E is known.
  * In 2005: Nogami and Morikawa [@Nogami2005] propose a method to obtain the six orders of these curves by counting the order of only one curve.
  * In 2006: Hess, Smart, and Vercauteren [@Hess_Smart_Vercauteren_2006_110] propose similar methods for twists $\phi_d : E' \mapsto E$ over extension fields $\mathbb{F}_{q^d}$ where $d = 6$ if $j(E) = 0$.
  * In 2018: Kim, Bahr, Neyman and Taylor [@kim2018orders§2.1] then completely characterize, by j-invariant, the number of orders of elliptic curves over all finite fields $F_{p^r}$ using combinatorial arguments and elementary number theory.
@@ -403,7 +403,7 @@ We can then utilize a lookup table, indexed by:
 * $f: \{0,1\}^2 \to \{0,1,2,3\}$
   * $f(u_0,u_1) \to 2 u_0 + u_1$
   * $u_0: 1$ `if` $c+d \equiv 2 \pmod{3}$ `else` $0$
-  * $u_1: \zeta_3(g) c + d = 0$
+  * $u_1 = 1$ if $\zeta_3(g) \cdot c + d \equiv 0 \pmod{p}$, else $0$
 
 When $n | (p-1)$, $\zeta_n(x)$ denotes $x$'s character in the primitive $n$-th roots of unity via $x^{(p-1)/n} \bmod p$. The resulting $f$ provides a bijection between the traces and the power of the generator $g$:
 

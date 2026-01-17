@@ -30,6 +30,8 @@
   - `TraceOfFrobenius`: TraceData structure and coefficient formulas
   - `Axioms`: Axiomatized results (Cornacchia, Hasse bound)
   - `Divisibility`: Even/divisibility-by-3 lemmas
+  - `CubicChar`: Cubic character theory for the u1 classification bit
+  - `IndexMapping`: Trace-to-curve index mapping permutations
   - `MainTheorem`: Main theorem assembly
 
   ## References
@@ -44,4 +46,6 @@ import EllipticPrimeOrder.Eisenstein
 import EllipticPrimeOrder.TraceOfFrobenius
 import EllipticPrimeOrder.Axioms
 import EllipticPrimeOrder.Divisibility
+import EllipticPrimeOrder.CubicChar
+import EllipticPrimeOrder.IndexMapping
 import EllipticPrimeOrder.MainTheorem

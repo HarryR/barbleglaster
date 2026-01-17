@@ -63,7 +63,7 @@ def calculate_curve_orders(p, g):
     assert eisenstein_norm(c,d) == p # c**2 - c*d + d**2
     assert p + 1 + a - (3*b) == p + 1 + c - (2*d)
     u0 = int(((c+d) % 3) == 2)
-    u1 = int((ZETA(3,g,p) * c + d) == 0)
+    u1 = int((ZETA(3,g,p) * c + d) % p == 0)
     idx = (u0 * 2) + u1
     result = [0] * 6
     norms_cd = make_norms_cd(c,d,p)

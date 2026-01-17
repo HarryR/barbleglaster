@@ -15,8 +15,8 @@ can have prime order:
 
 2. **Divisibility by 3**: Among the remaining orders {1, 2, 4, 5}, exactly two
    are divisible by 3. Which pair depends on a (mod 3):
-   - If a ≡ 1 (mod 3): orders at indices 2 and 4 are divisible by 3
-   - If a ≡ 2 (mod 3): orders at indices 1 and 5 are divisible by 3
+   - If a ≡ 1 (mod 3): orders at indices 1 and 5 are divisible by 3
+   - If a ≡ 2 (mod 3): orders at indices 2 and 4 are divisible by 3
 -/
 
 namespace TraceData
@@ -222,7 +222,7 @@ private lemma mod3_2_minus' (a : ℤ) (ha : a % 3 = 2) : (2 - a) % 3 = 0 := by
   rw [h, ha]; norm_num
 
 /-- order_1 % 3 = (2 + a) % 3 when p ≡ 1 (mod 3) -/
-private lemma order1_mod3_eq (hmod : p % 12 = 7) :
+theorem order1_mod3_eq (hmod : p % 12 = 7) :
     curveOrder t 1 % 3 = (2 + t.a) % 3 := by
   rw [order_1_eq]
   have hp3 : (p : ℤ) % 3 = 1 := by exact_mod_cast p_mod_3 hmod
@@ -236,7 +236,7 @@ private lemma order1_mod3_eq (hmod : p % 12 = 7) :
   rw [h2, hp1, h3]; norm_num
 
 /-- order_2 % 3 = (2 - a) % 3 when p ≡ 1 (mod 3) -/
-private lemma order2_mod3_eq (hmod : p % 12 = 7) :
+theorem order2_mod3_eq (hmod : p % 12 = 7) :
     curveOrder t 2 % 3 = (2 - t.a) % 3 := by
   rw [order_2_eq]
   have hp3 : (p : ℤ) % 3 = 1 := by exact_mod_cast p_mod_3 hmod
