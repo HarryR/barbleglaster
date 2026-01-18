@@ -41,8 +41,10 @@ axiom hasse_bound (p : ℕ) (hp : Nat.Prime p) (t : ℤ) :
 axiom curve_order_pos {p : ℕ} (hp : Nat.Prime p) (hp3 : p > 3) (t : TraceData p) (i : Fin 6) :
   0 < curveOrder t i
 
-/-- Curve orders for p > 3 are greater than 3 (follows from Hasse bound and p > 3) -/
-axiom curve_order_gt_three {p : ℕ} (hp : Nat.Prime p) (hp3 : p > 3) (t : TraceData p) (i : Fin 6) :
+/-- Curve orders for p > 7 are greater than 3.
+    Note: p = 7 admits order = 3 (e.g., trace = a + 3b = 5 gives order = 7 + 1 - 5 = 3).
+    For p > 7 with p ≡ 7 (mod 12), the Hasse bound ensures all orders exceed 3. -/
+axiom curve_order_gt_three {p : ℕ} (hp : Nat.Prime p) (hp7 : p > 7) (t : TraceData p) (i : Fin 6) :
   curveOrder t i > 3
 
 /-- Cornacchia uniqueness: The Cornacchia decomposition p = a² + 3b² with a even, b odd,

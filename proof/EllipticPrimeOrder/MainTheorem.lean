@@ -33,51 +33,51 @@ namespace TraceData
 variable {p : ℕ} (t : TraceData p)
 
 /-- Orders at curveOrder indices 0 and 3 cannot be prime (they are even and > 2) -/
-theorem order_0_not_prime (hp : Nat.Prime p) (hmod : p % 12 = 7) :
+theorem order_0_not_prime (hp : Nat.Prime p) (hmod : p % 12 = 7) (hne : p ≠ 7) :
     ¬ Prime (curveOrder t 0) := by
   have heven := order_0_even t hmod
-  have hgt := curve_order_gt_three hp (prime_mod7_12_gt_three ⟨hp, hmod⟩) t 0
+  have hgt := curve_order_gt_three hp (prime_mod7_12_gt_seven ⟨hp, hmod⟩ hne) t 0
   exact even_gt_two_not_prime (by linarith) heven
 
-theorem order_3_not_prime (hp : Nat.Prime p) (hmod : p % 12 = 7) :
+theorem order_3_not_prime (hp : Nat.Prime p) (hmod : p % 12 = 7) (hne : p ≠ 7) :
     ¬ Prime (curveOrder t 3) := by
   have heven := order_3_even t hmod
-  have hgt := curve_order_gt_three hp (prime_mod7_12_gt_three ⟨hp, hmod⟩) t 3
+  have hgt := curve_order_gt_three hp (prime_mod7_12_gt_seven ⟨hp, hmod⟩ hne) t 3
   exact even_gt_two_not_prime (by linarith) heven
 
 /-- If curveOrder index i has order divisible by 3 and > 3, then order is not prime -/
-theorem order_div3_not_prime (hp : Nat.Prime p) (hmod : p % 12 = 7) (i : Fin 6)
+theorem order_div3_not_prime (hp : Nat.Prime p) (hmod : p % 12 = 7) (hne : p ≠ 7) (i : Fin 6)
     (hdiv : 3 ∣ curveOrder t i) : ¬ Prime (curveOrder t i) := by
-  have hgt := curve_order_gt_three hp (prime_mod7_12_gt_three ⟨hp, hmod⟩) t i
+  have hgt := curve_order_gt_three hp (prime_mod7_12_gt_seven ⟨hp, hmod⟩ hne) t i
   exact div_by_three_gt_three_not_prime hgt hdiv
 
 /-- At most 4 curveOrder indices have composite order -/
-theorem at_least_four_composite (hp : Nat.Prime p) (hmod : p % 12 = 7) :
+theorem at_least_four_composite (hp : Nat.Prime p) (hmod : p % 12 = 7) (hne : p ≠ 7) :
     ¬ Prime (curveOrder t 0) ∧
     ¬ Prime (curveOrder t 3) ∧
     ((¬ Prime (curveOrder t 1) ∧ ¬ Prime (curveOrder t 5)) ∨
      (¬ Prime (curveOrder t 2) ∧ ¬ Prime (curveOrder t 4))) := by
   constructor
-  · exact order_0_not_prime t hp hmod
+  · exact order_0_not_prime t hp hmod hne
   constructor
-  · exact order_3_not_prime t hp hmod
+  · exact order_3_not_prime t hp hmod hne
   · cases some_orders_div_3 t hmod with
     | inl h15 =>
       left
       constructor
-      · exact order_div3_not_prime t hp hmod 1 h15.1
-      · exact order_div3_not_prime t hp hmod 5 h15.2
+      · exact order_div3_not_prime t hp hmod hne 1 h15.1
+      · exact order_div3_not_prime t hp hmod hne 5 h15.2
     | inr h24 =>
       right
       constructor
-      · exact order_div3_not_prime t hp hmod 2 h24.1
-      · exact order_div3_not_prime t hp hmod 4 h24.2
+      · exact order_div3_not_prime t hp hmod hne 2 h24.1
+      · exact order_div3_not_prime t hp hmod hne 4 h24.2
 
 /-- Main theorem: At most 2 of the 6 curveOrders can be prime -/
-theorem at_most_two_prime_orders (hp : Nat.Prime p) (hmod : p % 12 = 7) :
+theorem at_most_two_prime_orders (hp : Nat.Prime p) (hmod : p % 12 = 7) (hne : p ≠ 7) :
     ∃ (S : Finset (Fin 6)), S.card ≤ 2 ∧
       ∀ i : Fin 6, Prime (curveOrder t i) → i ∈ S := by
-  have h := at_least_four_composite t hp hmod
+  have h := at_least_four_composite t hp hmod hne
   cases h.2.2 with
   | inl h15 =>
     -- curveOrders {1, 5} are composite, potentially prime is {2, 4}
@@ -212,7 +212,7 @@ theorem curves_1_5_get_nondiv3_orders {p : ℕ} (_hp : Nat.Prime p) (hmod : p % 
     2. Among curves {1, 2, 4, 5}, exactly one pair has div-by-3 orders
     3. The permutation ensures curves {1, 5} get the non-div-by-3 orders -/
 theorem prime_order_implies_curve_1_or_5 {p : ℕ} (hp : Nat.Prime p) (hmod : p % 12 = 7)
-    (t : TraceData p) (g : ZMod p) (curveIdx : Fin 6)
+    (hne : p ≠ 7) (t : TraceData p) (g : ZMod p) (curveIdx : Fin 6)
     (hPrime : Prime (curveOrder t (curveToOrder (permIdx t g) curveIdx))) :
     curveIdx = 1 ∨ curveIdx = 5 := by
   -- Helper: curveToOrder _ 0 is always 0 or 3 (both even orders)
@@ -228,7 +228,7 @@ theorem prime_order_implies_curve_1_or_5 {p : ℕ} (hp : Nat.Prime p) (hmod : p 
   -- Helper: all curve orders are > 3
   have hgt_helper : ∀ i : Fin 6, curveOrder t i > 3 := by
     intro i
-    exact curve_order_gt_three hp (prime_mod7_12_gt_three ⟨hp, hmod⟩) t i
+    exact curve_order_gt_three hp (prime_mod7_12_gt_seven ⟨hp, hmod⟩ hne) t i
   -- First, curveIdx cannot be 0 or 3 (even orders)
   have h03 : curveIdx ≠ 0 ∧ curveIdx ≠ 3 := by
     constructor
@@ -355,14 +355,16 @@ theorem prime_order_implies_curve_1_or_5 {p : ℕ} (hp : Nat.Prime p) (hmod : p 
       have hgt := hgt_helper (curveToOrder (permIdx t g) 4)
       exact div_by_three_gt_three_not_prime hgt hdiv3 hPrime
 
-/-- Corollary: For any prime p ≡ 7 (mod 12), curves E_{g^1} and E_{g^5} are
-    the only candidates for prime order among the six sextic twists. -/
-theorem prime_order_only_at_curves_1_5 (p : ℕ) (hp : Nat.Prime p) (hmod : p % 12 = 7) :
+/-- Corollary: For any prime p ≡ 7 (mod 12) with p ≠ 7, curves E_{g^1} and E_{g^5} are
+    the only candidates for prime order among the six sextic twists.
+    Note: p = 7 is excluded as it admits an order of exactly 3. -/
+theorem prime_order_only_at_curves_1_5 (p : ℕ) (hp : Nat.Prime p) (hmod : p % 12 = 7)
+    (hne : p ≠ 7) :
     ∀ (t : TraceData p) (g : ZMod p) (curveIdx : Fin 6),
       Prime (curveOrder t (curveToOrder (permIdx t g) curveIdx)) →
       curveIdx ∈ ({1, 5} : Finset (Fin 6)) := by
   intro t g curveIdx hPrime
-  have h := prime_order_implies_curve_1_or_5 hp hmod t g curveIdx hPrime
+  have h := prime_order_implies_curve_1_or_5 hp hmod hne t g curveIdx hPrime
   cases h with
   | inl h1 => simp [h1]
   | inr h5 => simp [h5]

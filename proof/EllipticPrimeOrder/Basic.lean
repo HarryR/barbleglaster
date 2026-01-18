@@ -22,6 +22,12 @@ lemma prime_mod7_12_gt_three {p : ℕ} (h : IsPrimeMod7_12 p) : p > 3 := by
   obtain ⟨hp, hmod⟩ := h
   omega
 
+/-- For primes p ≡ 7 (mod 12) with p ≠ 7, we have p > 7.
+    The next prime after 7 in this congruence class is 19. -/
+lemma prime_mod7_12_gt_seven {p : ℕ} (h : IsPrimeMod7_12 p) (hne : p ≠ 7) : p > 7 := by
+  obtain ⟨hp, hmod⟩ := h
+  omega
+
 /-- For primes p ≡ 7 (mod 12), p is odd -/
 lemma prime_mod7_12_odd {p : ℕ} (h : IsPrimeMod7_12 p) : Odd p := by
   obtain ⟨hp, hmod⟩ := h
