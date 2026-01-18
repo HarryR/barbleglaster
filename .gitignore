@@ -7,3 +7,5 @@ allold
 *.pdf
 kate-strange
 new
+.lake
+lake-manifest.json

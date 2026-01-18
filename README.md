@@ -1,12 +1,13 @@
 ---
 title: "Selection of libsecp256k1 compatible elliptic curves"
 subtitle: "A complete enumeration and ranking"
-keywords: [python,sage,glv,elliptic-curve,eisenstein,primes,secp256k1]
+author: HarryR
+keywords: [elliptic-curve,secp256k1,glv,eisenstein,cryptography]
 ---
 
 \begin{abstract}
 
-We present a complete analysis of elliptic curves suitable as drop-in replacements for secp256k1. The various optimizations used by `libsecp256k1` constrain the search to primes within 31-bit ranges, enabling exhaustive enumeration. We narrow this space through successive filtering steps to yield approximately 16,000 candidate curves. We define a security ideal and measure distance from this ideal across multiple dimensions to rank all candidates, providing rigidity through balanced consideration of multiple cryptographically desirable properties rather than arbitrary threshold selection. This distance-based approach naturally yields conservative choices rather than merely the first candidate meeting incremental search criteria. Statistical comparison of secp256k1, random samples, and our optimal selections validates this methodology. The analysis produces two principal candidates: a 256-bit direct replacement and a 255-bit variant with simplified point compression. As cryptographic sovereignty becomes increasingly important, the bar for transparency and rigor in standardization has risen substantially, breaking free of the computational limitations of 25 years ago.
+We present a complete analysis of elliptic curves suitable as drop-in replacements for secp256k1. The various optimizations used by `libsecp256k1` constrain the search to primes within 31-bit ranges, enabling exhaustive enumeration. We narrow this space through successive filtering steps to yield approximately 7,000 prime-ordered curves. We define a security ideal and measure distance from this ideal across multiple dimensions to rank all candidates, providing rigidity through balanced consideration of multiple cryptographically desirable properties rather than arbitrary threshold selection. This distance-based approach naturally yields conservative choices rather than merely the first candidate meeting incremental search criteria. Statistical comparison of secp256k1, random samples, and our optimal selection validates this methodology. The same method extends to 255-bit primes, where the additional bit of headroom enables simplified point compression via a parity bit. As cryptographic sovereignty becomes increasingly important, the bar for transparency and rigor in standardization has risen substantially, breaking free of the computational limitations of 25 years ago.
 
 \end{abstract}
 
@@ -18,7 +19,7 @@ We present a complete analysis of elliptic curves suitable as drop-in replacemen
 
 The elliptic curve secp256k1 is remarkable for becoming one of the most widely deployed secure cryptographic primitives in use today and has withstood the test of time since its definition in 2000[@SEC2v1], but open questions remain about the standardization process &emdash; particularly regarding the relationship between parameter selection and presently unknown attacks. Meanwhile, computers and subsequent standards have evolved substantially: modern systems predominantly optimize for 64-bit architectures, and current research largely focuses on pairing-friendly curves or post-quantum alternatives, even as critical internet infrastructure continues to rely on choices made at the end of the last millennium.
 
-This paper presents an open, deterministic, and reproducible approach for finding candidate Koblitz-style curves over generalized Mersenne primes that can serve as drop-in replacements for secp256k1. Unlike SECG standards which propose multiple variants, we offer just two optimized choices: a 256-bit curve and a novel 255-bit curve. The latter specifically resolves encoding challenges by allowing a parity bit for point recovery.
+This paper presents an open, deterministic, and reproducible approach for finding candidate Koblitz-style curves over generalized Mersenne primes that can serve as drop-in replacements for secp256k1. We present a single optimized 256-bit curve, with the methodology extending naturally to 255-bit primes where the additional bit of headroom allows a parity bit for point recovery.
 
 
 ## Usage
@@ -35,9 +36,8 @@ this document can be typeset using Pandoc [@pandoc], and its graphs are produced
 by Sage [@sagemath] Python scripts using the data in the repository.
 
 The data produced by this project is deterministic and reproducible; it consists
-of a multi-step pipeline, which will be detailed further in the Methodology section, that can be used to perform the same analysis on chosen bit lengths.
-The same process for 256-bit curves as used for 255-bit, much smaller bit
-lengths can be used to verify the process quickly, for example at 200+ bits the
+of a multi-step pipeline, which will be detailed further in the Methodology section, that can be used to perform the same analysis on any chosen bit length.
+Smaller bit lengths can be used to verify the process quickly; at 200+ bits the
 process takes many days to compute. To get started, run:
 
 ```
@@ -93,32 +93,21 @@ beta_2 = -floor((k*g_2)/2**t) = -(k*g_2) >> t
 
 Smith [@Smith2013] introduced an improve approach for constant-time implementation by examining the discarded bit during the right shift operation. If the $(t-1)$-th bit is 1, the coefficient is incremented, ensuring proper rounding without conditional branches that could leak timing information.
 
-# Security Considerations
+# Security: Cheon Resistance and Factor Distribution
 
-When selecting elliptic curves with efficiently-computable endomorphisms for cryptographic applications, the following security requirements must be satisfied:
-
-1. **Large prime order requirement**: The order $|E_q|$ must be prime or divisible by a large prime $n$ ($n \geq 2^{160}$) to prevent the attack described by Pohlig and Hellman [@PohligHellman1978] and Pollard's rho attack [@Pollard1978], this method was subsequently improved by Oorschot and Wiener [@vanOorschotWiener1999].
-
-2. **Anomalous curve avoidance**: Ensure that $|E_q| \neq q$ to prevent the attack demonstrated by Semaev [@Semaev1998], Satoh and Araki [@SatohAraki1998], and Smart [@Smart1999], which can solve the discrete logarithm problem in polynomial time on such curves.
-
-3. **MOV/FR attack resistance**: The large prime $n$ should not divide $q^i - 1$ for small values of $i$ (typically $1 \leq i \leq 20$) to prevent the Weil pairing attack described by Menezes, Okamoto, and Vanstone [@MenezesOkamotoVanstone1993] and Tate pairing attack by Frey and Rück [@FreyRuck1994], which reduce the ECDLP to a discrete logarithm problem in a finite field.
-
-4. **Special curve considerations**: While curves with efficiently-computable endomorphisms offer performance advantages, potential specialized attacks like those described by Gallant, Lambert, and Vanstone [@GallantLambertVanstone2000] or and Wiener and Zuccherato [@WienerZuccherato1999] should be noted. However, these approaches only reduce computation time by a small factor and do not significantly compromise security when the above requirements are met.
-
-5. **Large discriminant**: The complex-multiplication field discriminant $D$ (computed as $(t^2-4p)/s^2$ or $4(t^2-4p)/s^2$ depending on modular conditions, where $t$ is the trace of the curve) should have an absolute value larger than $2^{100}$ according to SafeCurves criteria. A large discriminant prevents specific mathematical vulnerabilities and speeds in the rho method that could weaken the security of the curve.
-
-6. **Twist security**: To prevent twist attacks or where points aren't validated, the orders of the curve's sextic twists should also have distinct large large prime order factors close to $log_2(p)$ with the smallest number of distinct common factors.
-
-## Cheon's Intuition
-
-In 2006, Jung Hee Cheon demonstrated [@Cheon06] a specialized attack against cryptosystems relying on the Strong Diffie-Hellman (SDH) assumption. Their paper has significant implications for the security of pairing-based cryptography and the selection of secure elliptic curve parameters.
-
-The attack reveals that if there is a positive divisor $d$ of $p-1$, the Strong Diffie-Hellman problem can be solved in $O(\log p \cdot \sqrt{p/d} + \sqrt{d})$ group operations using $O(\max(\sqrt{p/d},\sqrt{d}))$ memory. This implies the computational complexity of SDH-related problems can be reduced by a factor of $O(\sqrt{d})$ compared to the discrete logarithm problem for such primes. The key insight is that the security reduction may depend on the factorization properties of multiple curve parameters ($p \pm 1$, $q \pm 1$), not just the size of $p$ itself.
+In 2006, Jung Hee Cheon demonstrated [@Cheon06] a specialized attack against cryptosystems relying on the Strong Diffie-Hellman (SDH) assumption. The attack exploits the factorization structure of group orders: given a positive divisor $d$ of $p-1$, the SDH problem can be solved in $O(\log p \cdot \sqrt{p/d} + \sqrt{d})$ group operations using $O(\max(\sqrt{p/d},\sqrt{d}))$ memory. This reduces complexity by $O(\sqrt{d})$ compared to generic discrete logarithm attacks, meaning security depends not just on the size of $p$, but on the factorization properties of $p \pm 1$ and $q \pm 1$.
 
 ![](graphs/cheon_resistance.svg)
-The security reduction is most pronounced when factors are roughly equal in size - a 256-bit number with balanced ~135-bit factors drops from 128-bit to ~69-bit security. However, the attack becomes ineffective with very unbalanced factors: extremely small factors (under 15 bits) or large factors (over 243 bits) provide little to no security reduction. The vulnerable range occurs when factors are between 28-243 bits, with maximum vulnerability at roughly equal factor sizes.
 
-Although we are selecting curves with extremely high embedding degrees that effectively make pairing-based attacks like Cheon's almost impossible, such defenses provide valuable insight into forms of rigidity that may protect against as of yet unknown vulnerabilities. This is especially important considering the novel applications that emerged after Schnorr's patent [@Schnorr91] expired in 2010, such as threshold signatures, adaptor signatures, multi-party computation (MPC) and zero-knowledge proofs which may inadvertently expose auxiliary information that could make similar attacks practically feasible.
+The vulnerability is most pronounced with balanced factors: a 256-bit number with equal ~128-bit factors drops from 128-bit to ~64-bit security. However, very unbalanced factors - either extremely small (under 15 bits) or extremely large (over 243 bits) - provide little attack surface. This creates a "safe zone" at the extremes of the factor size distribution.
+
+Erdős and Kac [@ErdosKac1940] showed that the number of prime factors $\omega(n)$ in typical integers follows a normal distribution centered on $\log\log n$:
+
+$$ \frac{\omega(n) - \log\log n}{\sqrt{\log\log n}} \xrightarrow{d} \mathcal{N}(0,1) $$
+
+For 256-bit numbers, this means most integers have roughly 4-5 distinct prime factors of varying sizes which is precisely the balanced configurations that Cheon's attack exploits. Secure configurations (dominated by one large prime factor) lie in the tails of this distribution.
+
+Our trial division filter systematically rejects candidates with small factors, skewing the factor distribution toward Cheon's safe zone. The $2^{16}$ trial division limit ensures that any remaining small factors are negligible, pushing the factorization toward the "one large prime" regime where Cheon's attack provides no advantage. Combined with our selection of curves with extremely high embedding degrees (on the order of 253-256 bits for our proposed curves), pairing-based attacks become computationally infeasible. This rigidity provides a form of parameter transparency: by constraining factors beyond minimum requirements, we reduce the space for hidden structure that future attacks might exploit.
 
 
 # Our Methodology
@@ -183,26 +172,17 @@ Analysis extends beyond small-subgroup attacks to include Cheon's generalized di
 
 # Distance Metric & Ideal
 
-The rigidity argument of our curves depends on the factorization patterns of the prime field (base) and twist orders (scalars), and their multiplicative groups $q-1$. These factorization patterns follow established statistical distributions from number theory, forming a probability space where curves with optimal security properties are proportionally rare. Consequently, the relationship between computational effort and parameter optimality becomes quantifiable, requiring significant computation to optimize for all measures simultaneously.
+The rigidity argument depends on factorization patterns of the prime field $p-1$, curve orders $q$, their multiplicative groups $q-1$, and all six twist orders. These patterns follow established statistical distributions from number theory, forming a probability space where curves with optimal security properties are proportionally rare.
 
-To create a simple ranking system, we take the ratio of the log2 of the largest factor over the log2 of the field, that is where the value is close to 1 it is either prime or has small factors (2,3,5,7 etc.). We employ nested aggregation functions where the tree itself encodes priorities rather than using explicit weights, meaning we can group high-prioritiy metrics at higher levels of the tree. As all we're ranking are consistent prime factorization patterns, this approach transforms what would typically be considered a statistical bias into a deliverate design that allows more intuitive control over relative importance.
+For each factorization, we compute the ratio of the largest factor's bit-length to the field's bit-length:
 
-TODO: finalize ranking system description after external input
+$$\text{score}(n) = \frac{\log_2(\text{largest prime factor of } n)}{L}$$
 
-## Selection & Comparison
+where $L$ is the target bit-length (256). Multiple scores are then combined using an aggregation function $\eta$ which balances average performance against worst-case outliers:
 
-As the ideal is measured as 0 to 1 across all facets, we must ensure the scale allows for comparison between metrics by denoting points of reference:
+$$\eta(\vec{x}) = \frac{1}{2}\left(\sqrt{\frac{1}{n}\sum_i x_i^2} + \frac{1}{n}\sum_i x_i\right)$$
 
- * Metrics are relative to the bit-length of the curves.
- * 0 is instantly and permanently broken.
- * 1 is safe until quantum computers...?
- * 0.5 may be safe vs well funded & organized groups.
- * The curve is only as strong as its weakest metric.
-
-In doing this we make the assumption that our metrics are conservative but
-best-effort at the time, with the explicit hope that should a novel non-quantum
-attack be developed which exploits a deep number-theoretic structural relationship
-then the optimizations made here will provide fewer footholds.
+This averages the RMS and arithmetic mean, penalizing low outliers so that a single weak factor pattern degrades the overall score. Metrics are aggregated hierarchically (prime curve order, non-prime twists, field factorization), then normalized to $[0, 1]$ which measures the distance from an unachievable ideal where all factorizations would be prime.
 
   ![](graphs/results.svg)
 For reference, the curves detailed in the Appendix are:
@@ -210,48 +190,6 @@ For reference, the curves detailed in the Appendix are:
  * `p256kNG` score: 0.93
  * `secp256k1` score: 0.72
  * lowest ranked score: 0.42
-
-# Factors of Prime-Adjacents
-
-Hardy and Ramanujan [@HardyRamanujan1917] proved in 1917 that for almost all integers, the number of distinct prime factors $\omega(n)$ is closely approximated by $\log(\log n)$, establishing one of the first "normal order" results in analytic number theory:
-
-$$ |\omega(n) - \log\log{n}| < (\log\log{n})^{1/2+\epsilon} $$
-
-Erdős and Kac [@ErdosKac1940] subsequently demonstrated in 1940 that the fluctuations in the number of prime factors follow a normal distribution:
-
-$$ \frac{\omega(n) - \log\log n}{\sqrt{\log\log{n}}} \xrightarrow{d} \mathcal{N}(0,1) $$
-
-The Dickman[@Dickman1930]-de Bruijn[@deBruijn1951] function then describes the distribution of the largest prime factor in random integers:
-
-$$ u\rho'(u) + \rho(u-1) = 0 \quad\text{for } u > 1 $$
-
-$$ \rho(u) = 1  \quad\text{for } 0 \leq u \leq 1 $$
-
-For a real number $y > 1$, a positive integer is called $y$-smooth (or $y$-friable) if none of its prime factors exceed $y$. The function $\Psi(x,y)$ counts the number of $y$-smooth integers not exceeding $x$, and for fixed $u > 0$, we have the asymptotic relation $\Psi(x,x^{1/u}) \sim x\rho(u)$ as $x \to \infty$.
-
-Friedlander [@Friedlander1976] complemented this work in 1976 by introducing a two-dimensional analog $\sigma(u,v)$ of $\rho(u)$. This function is used to estimate $\Psi(x,y,z)$, which counts the number of integers less than or equal to $x$ that are $y$-smooth with at most one prime factor greater than $z$:
-
-$$ \Psi(x,x^{1/a},x^{1/b})\sim x\sigma(b,a) $$
-
-Thus, for a prime number $p$ and a sufficiently large parameter $x$, we can calculate the probability that both adjacent numbers $p\pm{1}$ have a largest prime factor exceeding the threshold $x^{\alpha}$ while the remaining cofactors are $x^{1/c}$-smooth (where $c > {1\over\alpha}$):
-
-$$P_{\text{both}}(\alpha,c) = \left(\frac{\Psi(x,x,x^{\alpha})}{x} - \rho\left(\frac{1}{c}\right)\right)^2$$
-
-If using this metric and criteria for rejection sampling somehow infringes upon the `US10129026B2` patent [@BrownPatent], despite our proposed curves not permitting efficient pairings, then we're cooked — mathematicians everywhere should revolt because Certicom is essentially claiming ownership over basic number-theoretic properties of integers, not to mention the audacity of patenting Cheon's direct conclusions and recommendations!
-
-# Conclusions
-
-The framework and proposed curves we're presenting transforms the traditionally opaque and intuitive process of curve selection into a transparent, quantifiable method that can increase cryptographic sovereignty. By providing both the data and reproducible metrics for assessment, and concrete implementations (p256kNG and p255kNG), we ask whether cryptographic parameters are inherently multidimensional - spanning mathematical security, generation transparency, and independence from potential influence. The combined metric we've developed doesn't just measure technical properties; it quantifies the degree to which parameters can be independently verified and trusted, creating a shared language for security evaluation across mutually distrustful entities.
-
-Given the constraint of being compatible with and as fast as `libsecp256k1` our search space is severely constrained. Randomly sampling the entire 256bit space would still see the same distributions, but have more chance of finding curves closer to the ideal. If you know you want primes of the form of say $(2 \cdot 3 \cdot q) + 1 = p$ you can spend as much CPU time as you want to 'mine' curves with increasingly rarer properties over all its facets which may score closer to our ideal unachievable curve.
-
-While many open questions remain about optimal dimension weighting, uncertainty quantification, the core contribution of our work - transforming parameter selection from a binary assessment to a continuous security rank - provides immediate practical value while establishing foundations for future research.
-
-## Acknowledgements
-
-...
-
-<!-- Daniel from Certicom is a Gollum-like patent hoarding heretical cunt -->
 
 :::
 
@@ -359,17 +297,14 @@ rank: 0.0
 
 \pagebreak
 
-# Lemmas, Corrolaries & Notes
+# Mathematical Foundations
 
 ## Deterministic Curve Order Mapping via Eisenstein Integers in $\mathbb{Q}(\sqrt{-3})$
-
-See: `lemma/2-eisenstein-mapping-magic.py`
-See: `steps/5-curves.py`
 
 The history of elliptic curve point counting has rich and deep roots which have been refined over the decades, we can trace a lineage of sorts which leads to the most useful results for us:
 
  * In 1986: Lenstra [@lenstra1986elliptic, 11, §4] provides an intuitive formula for j-invariant 0 curves over $\mathbb{Q}(\sqrt{-3})$, which comes surprisingly close to Wu & Xu's [@GuangwuXu_2020_1136] conclusions in 2020.
- * In 1995: Schoof [@schoof1995counting§4] expains how to count the number of points when the endomorphism ring of E is known.
+ * In 1995: Schoof [@schoof1995counting§4] explains how to count the number of points when the endomorphism ring of E is known.
  * In 2005: Nogami and Morikawa [@Nogami2005] propose a method to obtain the six orders of these curves by counting the order of only one curve.
  * In 2006: Hess, Smart, and Vercauteren [@Hess_Smart_Vercauteren_2006_110] propose similar methods for twists $\phi_d : E' \mapsto E$ over extension fields $\mathbb{F}_{q^d}$ where $d = 6$ if $j(E) = 0$.
  * In 2018: Kim, Bahr, Neyman and Taylor [@kim2018orders§2.1] then completely characterize, by j-invariant, the number of orders of elliptic curves over all finite fields $F_{p^r}$ using combinatorial arguments and elementary number theory.
@@ -403,7 +338,7 @@ We can then utilize a lookup table, indexed by:
 * $f: \{0,1\}^2 \to \{0,1,2,3\}$
   * $f(u_0,u_1) \to 2 u_0 + u_1$
   * $u_0: 1$ `if` $c+d \equiv 2 \pmod{3}$ `else` $0$
-  * $u_1: \zeta_3(g) c + d = 0$
+  * $u_1 = 1$ if $\zeta_3(g) \cdot c + d \equiv 0 \pmod{p}$, else $0$
 
 When $n | (p-1)$, $\zeta_n(x)$ denotes $x$'s character in the primitive $n$-th roots of unity via $x^{(p-1)/n} \bmod p$. The resulting $f$ provides a bijection between the traces and the power of the generator $g$:
 
@@ -412,16 +347,16 @@ When $n | (p-1)$, $\zeta_n(x)$ denotes $x$'s character in the primitive $n$-th r
 * $f(u_0,u_1) = 2$: $\text{traces}[i] + p + 1 \leftrightarrow |E_j| : y^2 = x^3 + g^{(3, 4, 5, 0, 1, 2)[i]}$
 * $f(u_0,u_1) = 3$: $\text{traces}[i] + p + 1 \leftrightarrow |E_j| : y^2 = x^3 + g^{(3, 2, 1, 0, 5, 4)[i]}$
 
-While the specific order of our traces in relation to the mapping indices are somewhat arbitrary, they can be thought of as permutations of the Dirichlet characters $\chi_9$ or $\chi_7$. This method provides a complete and deterministic characterization of the distinct six isomorphism classes of j-invariant 0 curves over $\mathrm{GF}(p)$ when $p \equiv 7 \pmod{12}$.
+The four permutations form the Klein four-group $V_4$, corresponding to automorphisms of the trace index set that preserve the quadratic twist pairing $\{0,3\}, \{1,4\}, \{2,5\}$. This method provides a complete and deterministic characterization of the distinct six isomorphism classes of j-invariant 0 curves over $\mathrm{GF}(p)$ when $p \equiv 7 \pmod{12}$.
 
-This aformentioned method requires 3 modulo exponentiations, which includes finding $\sqrt{-3}$ for Cornacchia's algorithm, and two integer square roots. The remaining operations are either table lookups, or simple binary and integer arithmetic without negative intermediates. This computes all six curve orders simultaneously, compared to approaches requiring separate computations for each curve.
+This method requires 3 modular exponentiations: finding $\sqrt{-3}$ for Cornacchia's algorithm, computing $\zeta_3(g)$ for the $u_1$ classification bit, and verifying $g$ is a primitive root. The remaining operations are table lookups and simple integer arithmetic without negative intermediates. This computes all six curve orders simultaneously, compared to approaches requiring separate computations for each curve.
+
+**On the $u_1$ bit and the cubic character**: The $u_1$ bit bridges two independent structures: the Eisenstein prime $\pi = c + d\omega$ from Cornacchia, and the generator $g$. The quotient $\mathbb{Z}[\omega]/(\pi)$ embeds into $\mathbb{F}_p$ sending $\omega \mapsto -c/d$, so $-d/c = \omega^{-1}$ is always a primitive cube root of unity. The cubic character $\zeta_3(g)$ measures how $g$ aligns with this structure - since $g$ is chosen independently (as the smallest primitive root), this alignment cannot be determined from $(c, d)$ alone, requiring the modular exponentiation. Note that when only searching for prime-order curves, $u_1$ can be skipped: use $u_0$ to identify which pair of orders can be prime, then test both.
 
 
 ## Prime Order vs Trace Structure
 
-See: `lemma/2-glv-search.py`
-
-For curves $E_{g^i}: y^2 = x^3 + g^i$ where $g$ generates $\mathbb{F}^*/\mathbb{F}^{*6}$, only the curves with $i = 1$ and $i = 5$ (equivalent to $i = -1$ in the quotient group) can have prime order [@Broker2005; @Washington2008, §4.1]. This is explained by the structure of the trace of Frobenius:
+For curves $E_{g^i}: y^2 = x^3 + g^i$ where $g$ generates $\mathbb{F}^*/\mathbb{F}^{*6}$, at most two of the six curves can have prime order [@Broker2005; @Washington2008, §4.1]. The specific pair depends on the mapping between trace indices and curve indices (determined by the classification bits from the previous section). This constraint is explained by the structure of the trace of Frobenius:
 
 * Let $t_i$ be the trace of Frobenius for curve $E_{g^i}$, so that $|E_{g^i}| = p + 1 - t_i$ [@Silverman1986, §V.2]
 * For j-invariant 0 curves over fields with $p \equiv 7 \pmod{12}$, the traces follow a specific pattern related to the sixth roots of unity [@Silverman1994, §II.2]:
@@ -430,14 +365,24 @@ For curves $E_{g^i}: y^2 = x^3 + g^i$ where $g$ generates $\mathbb{F}^*/\mathbb{
 
   where $\alpha$ and $\beta$ are constants and $\zeta_6$ is a primitive sixth root of unity in the field.
 
-* For $i = 0$, we get $t_0 = \alpha + \beta$, which is always even
-* For $i \in \{2, 3, 4\}$, the traces can be expressed as:
-  - $t_2 = \alpha \cdot \zeta_6^2 + \beta \cdot \zeta_6^{-2}$ (related to cube roots of unity)
-  - $t_3 = \alpha \cdot \zeta_6^3 + \beta \cdot \zeta_6^{-3} = \alpha \cdot (-1) + \beta \cdot (-1) = -(\alpha + \beta)$ (always even)
-  - $t_4 = \alpha \cdot \zeta_6^4 + \beta \cdot \zeta_6^{-4}$ (related to cube roots of unity)
+* For $i \in \{0, 3\}$, the orders are always even (hence composite for $p > 3$):
+  - $t_0 = -2a$ gives $|E_0| = p + 1 + 2a$ (even, since $p \equiv 7 \pmod{12}$ implies $p+1$ is even, and $a$ is even in Cornacchia's representation)
+  - $t_3 = 2a$ gives $|E_3| = p + 1 - 2a$ (even)
 
-* These expressions for $i \in \{0, 2, 3, 4\}$ result in trace values that make $p + 1 - t_i$ composite.
-* Only for $i \in \{1,5\}$ do we get trace values that can make $p + 1 - t_i$ prime.
-  - For $i = 1$: $t_1 = \alpha \cdot \zeta_6 + \beta \cdot \zeta_6^{-1}$
-  - For $i = 5$: $t_5 = \alpha \cdot \zeta_6^5 + \beta \cdot \zeta_6^{-5} = \alpha \cdot \zeta_6^{-1} + \beta \cdot \zeta_6 = -t_1$ (as $\zeta_6^5 = \zeta_6^{-1}$)
-* While the formula suggests $t_5 = -t_1$, we empirically verify a more general relationship: We call the curve with $i = 5$ the trace complementary sextic twist of the curve with $i = 1$, as their traces satisfy $|t_1 + t_5| = |2a|$ where $p = a^2 + 3b^2$.
+* For the remaining indices $\{1, 2, 4, 5\}$, exactly one pair has orders divisible by 3, depending on $a \bmod 3$:
+  - If $a \equiv 1 \pmod{3}$: orders at indices 1 and 5 are divisible by 3
+  - If $a \equiv 2 \pmod{3}$: orders at indices 2 and 4 are divisible by 3
+  - (Note: $a \not\equiv 0 \pmod{3}$ since otherwise $3 | a^2 + 3b^2 = p$, contradicting $p \equiv 1 \pmod{3}$)
+
+* This leaves at most 2 trace indices where the order could potentially be prime. For $p > 7$, all six orders exceed 3, ensuring this divisibility analysis is complete. (The edge case $p = 7$ admits an order of exactly 3.)
+
+* The six traces form quadratic twist pairs: $t_i + t_{i+3} = 0$ for $i \in \{0,1,2\}$. Consequently, each pair of orders sums to $2(p+1)$, and the sum of all six orders equals $6(p+1)$.
+
+
+## GLV $\beta$ from Eisenstein Coordinates
+
+The GLV endomorphism $\phi(x,y) = (\beta x, y)$ requires $\beta$ to be a primitive cube root of unity in $\mathbb{F}_p$. From the Eisenstein representation $\pi = c + d\omega$, the quotient $-d/c$ is itself a primitive cube root (for $p > 3$), so:
+
+$$\beta \in \{-d/c, (-d/c)^2\} = \{g^{(p-1)/3}, g^{2(p-1)/3}\} \mod p$$
+
+The choice between these two values depends on the Eisenstein lattice orientation, analogous to the $u_0, u_1$ classification bits for curve order mapping.
